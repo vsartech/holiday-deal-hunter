@@ -36,11 +36,19 @@ export default function CompetitorsPage() {
   const [destFilter, setDestFilter] = useState('All');
   const [selectedPkg, setSelectedPkg] = useState<CompetitorPackage | null>(null);
   const [page, setPage] = useState(1);
-  const perPage = 20;
+  const [tableMissing, setTableMissing] = useState(false);
 
   useEffect(() => {
     supabase.from('competitor_packages').select('*').order('price', { ascending: true }).limit(500)
-      .then(({ data }) => { setPackages(data || []); setLoading(false); });
+      .then(({ data, error }) => {
+        if (error && error.code === 'PGRST205') {
+          setTableMissing(true);
+          setLoading(false);
+        } else {
+          setPackages(data || []);
+          setLoading(false);
+        }
+      });
   }, []);
 
   const competitors = [...new Set(packages.map(p => p.competitor))];
@@ -53,8 +61,8 @@ export default function CompetitorsPage() {
     return result;
   }, [packages, compFilter, destFilter]);
 
-  const paged = filtered.slice((page - 1) * perPage, page * perPage);
-  const totalPages = Math.ceil(filtered.length / perPage);
+  const paged = filtered.slice((page - 1) * 20, page * 20);
+  const totalPages = Math.ceil(filtered.length / 20);
 
   const prices = filtered.filter(p => p.price).map(p => p.price!);
 
@@ -84,7 +92,37 @@ export default function CompetitorsPage() {
     max: Math.max(...prices),
   })).sort((a, b) => a.avg - b.avg);
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="spinner" /></div>;
+
+  if (tableMissing) {
+    return (
+      <div className="p-6 max-w-[1400px] mx-auto animate-fade-in-up">
+        <div className="mb-8">
+          <h1 className="display-heading">Competitor Intelligence</h1>
+          <p className="section-label mt-2">Competitor package data</p>
+        </div>
+
+        <div className="panel p-8 text-center">
+          <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-4xl mx-auto mb-4">🏢</div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Competitor Data Unavailable</h2>
+          <p className="text-gray-500 mb-4 max-w-xl mx-auto">
+            Competitor package data is currently unavailable because major travel sites (MakeMyTrip, Yatra, Thomas Cook, SOTC)
+            employ enterprise-grade Akamai bot protection that blocks automated scraping from cloud/server IPs.
+          </p>
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg max-w-xl mx-auto text-left text-sm">
+            <p className="font-medium text-gray-900 mb-2">To enable competitor data:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-600">
+              <li>Run the SQL migration in Supabase Dashboard → SQL Editor to create the <code className="bg-gray-100 px-1 rounded">competitor_packages</code> table</li>
+              <li>Configure a residential proxy or VPN with residential IPs for scraping</li>
+              <li>Or manually add competitor package data via the Supabase dashboard</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const allPrices = filtered.filter(p => p.price).map(p => p.price!);
 
   return (
     <div className="p-6 max-w-[1400px] mx-auto animate-fade-in-up">
@@ -181,7 +219,7 @@ export default function CompetitorsPage() {
             <tbody>
               {paged.map(pkg => (
                 <tr key={pkg.id} onClick={() => setSelectedPkg(pkg)}>
-                  <td><span className="status-badge status-badge-pink">{pkg.competitor}</span></td>
+                  <td><StatusBadge text={pkg.competitor} color="pink" /></td>
                   <td className="font-medium max-w-[300px] truncate">{pkg.title}</td>
                   <td>{pkg.destination || '—'}</td>
                   <td>{pkg.duration || '—'}</td>
