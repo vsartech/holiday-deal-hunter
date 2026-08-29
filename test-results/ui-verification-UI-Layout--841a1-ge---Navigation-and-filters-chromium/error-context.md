@@ -6,16 +6,109 @@
 
 # Test info
 
-- Name: ui-verification.spec.ts >> UI Layout Verification >> Overview page - Sidebar visible and navigation works
-- Location: tests/ui-verification.spec.ts:9:7
+- Name: ui-verification.spec.ts >> UI Layout Verification >> Deals page - Navigation and filters
+- Location: tests/ui-verification.spec.ts:51:7
 
 # Error details
 
 ```
-Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3004/
-Call log:
-  - navigating to "http://localhost:3004/", waiting until "load"
+Error: expect(locator).toBeVisible() failed
 
+Locator: locator('main h1:has-text("Travel Deals")')
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "toBeVisible" with timeout 5000ms
+  - waiting for locator('main h1:has-text("Travel Deals")')
+
+```
+
+```yaml
+- complementary:
+  - text: HI Holiday Intelligence
+  - button "Collapse sidebar": ⟵
+  - navigation:
+    - text: Navigation
+    - list:
+      - listitem:
+        - link "📊 Overview":
+          - /url: /
+      - listitem:
+        - link "💰 Travel Deals":
+          - /url: /deals
+      - listitem:
+        - link "💳 Card Offers":
+          - /url: /offers
+      - listitem:
+        - link "📈 Market Intel":
+          - /url: /market
+      - listitem:
+        - link "🏢 Competitors":
+          - /url: /competitors
+      - listitem:
+        - link "🤖 AI Assistant":
+          - /url: /chat
+  - text: Holiday Intelligence v1.0
+- main:
+  - heading "Overview" [level=1]
+  - paragraph: Full pipeline analytics across all data sources
+  - paragraph: Travel Deals
+  - paragraph: "328"
+  - paragraph: 6 destinations
+  - text: 💰
+  - paragraph: Card Offers
+  - paragraph: "128"
+  - paragraph: 205 with promo codes
+  - text: 💳
+  - paragraph: Market Signals
+  - paragraph: "0"
+  - paragraph: 0 types
+  - text: 📈
+  - paragraph: Competitors
+  - paragraph: "0"
+  - paragraph: 0 tracked
+  - text: 🏢
+  - paragraph: Cheapest Deal
+  - paragraph: ₹3,453
+  - text: 🎯
+  - paragraph: Avg Deal Price
+  - paragraph: ₹329,921
+  - text: 📊
+  - paragraph: Data Sources
+  - paragraph: "4"
+  - text: 🔗
+  - paragraph: Destinations
+  - paragraph: "6"
+  - text: 🌍
+  - heading "Deals by Destination" [level=3]
+  - img: Bangkok Dubai Singapore Bali Maldives Goa 0 20 40 60 80
+  - heading "Price Distribution by Destination" [level=3]
+  - img: Bangkok Dubai Singapore Bali Maldives Goa 0 200000 400000 600000 800000
+  - list:
+    - listitem:
+      - img
+      - text: Min
+    - listitem:
+      - img
+      - text: Avg
+    - listitem:
+      - img
+      - text: Max
+  - heading "Deals by Type" [level=3]
+  - img:
+    - img
+    - img
+    - img
+    - text: package 26% hotel 19% flight 56%
+  - heading "Offers by Source" [level=3]
+  - img: 0 15 30 45 60 coupdunia cleartrip axis_bank grabon goibibo
+  - heading "Top 5 Cheapest Deals" [level=3]
+  - text: Hotels in Bangkok Bangkok • cleartrip ₹3,453 Hotels in Dubai Dubai • cleartrip ₹3,563 Hotels in Singapore Singapore • cleartrip ₹13,724 Veena World Package Bangkok • veena_world ₹35,000 Veena World Package Dubai • veena_world ₹35,000
+  - heading "Data Sources" [level=3]
+  - text: kesari 72 cleartrip 208 veena world 6 goibibo 42
+- alert
 ```
 
 # Test source
@@ -25,8 +118,7 @@ Call log:
   2   | 
   3   | test.describe('UI Layout Verification', () => {
   4   |   test.beforeEach(async ({ page }) => {
-> 5   |     await page.goto('/');
-      |                ^ Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3004/
+  5   |     await page.goto('/');
   6   |     await page.waitForLoadState('networkidle');
   7   |   });
   8   | 
@@ -76,7 +168,8 @@ Call log:
   52  |     await page.click('aside a:has-text("Travel Deals")');
   53  |     await page.waitForLoadState('networkidle');
   54  | 
-  55  |     await expect(page.locator('main h1:has-text("Travel Deals")')).toBeVisible();
+> 55  |     await expect(page.locator('main h1:has-text("Travel Deals")')).toBeVisible();
+      |                                                                    ^ Error: expect(locator).toBeVisible() failed
   56  |     await expect(page.locator('main select')).toHaveCount(3);
   57  |     await expect(page.locator('main table')).toBeVisible();
   58  |   });
@@ -127,4 +220,54 @@ Call log:
   103 |     await expect(page.locator('.modal-panel').getByText('Applicable For').first()).toBeVisible();
   104 | 
   105 |     await page.click('.modal-backdrop >> button');
+  106 |   });
+  107 | 
+  108 |   test('Market Intel page - Layout and filters', async ({ page }) => {
+  109 |     await page.click('aside a:has-text("Market Intel")');
+  110 |     await page.waitForLoadState('networkidle');
+  111 | 
+  112 |     await expect(page.locator('main h1:has-text("Market Intelligence")')).toBeVisible();
+  113 |     await expect(page.locator('main select')).toHaveCount(2);
+  114 |     await expect(page.locator('main table')).toBeVisible();
+  115 |     
+  116 |     // Charts may not render if no data - just check chart section exists
+  117 |     const chartSection = page.locator('main').getByText('Signals by Type').first();
+  118 |     if (await chartSection.count() > 0) {
+  119 |       await expect(chartSection).toBeVisible();
+  120 |     }
+  121 |   });
+  122 | 
+  123 |   test('Market Intel page - Modal shows signal details', async ({ page }) => {
+  124 |     await page.goto('/market');
+  125 |     await page.waitForLoadState('networkidle');
+  126 |     
+  127 |     // Check if there's data
+  128 |     const hasData = await page.locator('tbody tr').count() > 0;
+  129 |     
+  130 |     if (hasData) {
+  131 |       await page.locator('tbody tr').first().click();
+  132 |       await expect(page.locator('.modal-backdrop')).toBeVisible();
+  133 |       await expect(page.locator('.modal-panel h3')).toBeVisible();
+  134 |       await page.click('.modal-backdrop >> button');
+  135 |     } else {
+  136 |       // No data - just verify the page loads correctly
+  137 |       await expect(page.locator('main h1:has-text("Market Intelligence")')).toBeVisible();
+  138 |     }
+  139 |   });
+  140 | 
+  141 |   test('Competitors page - Layout and charts', async ({ page }) => {
+  142 |     await page.click('aside a:has-text("Competitors")');
+  143 |     await page.waitForLoadState('networkidle');
+  144 | 
+  145 |     await expect(page.locator('main h1:has-text("Competitor Intelligence")')).toBeVisible();
+  146 |     await expect(page.locator('main select')).toHaveCount(2);
+  147 |     await expect(page.locator('main table')).toBeVisible();
+  148 |     
+  149 |     // Charts may not render if no data
+  150 |     const chartSection = page.locator('main').getByText('Packages by Competitor').first();
+  151 |     if (await chartSection.count() > 0) {
+  152 |       await expect(chartSection).toBeVisible();
+  153 |     }
+  154 |   });
+  155 | 
 ```

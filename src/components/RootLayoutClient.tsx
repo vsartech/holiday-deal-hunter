@@ -15,7 +15,7 @@ function MainContent({ children }: MainContentProps) {
 
   return (
     <main 
-      className="flex-1 min-h-screen transition-all duration-300 ease-in-out"
+      className="flex-1 min-h-screen transition-all duration-300 ease-in-out bg-gray-50"
       style={{ marginLeft }}
     >
       {children}

@@ -3,8 +3,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, TravelDeal, CardOffer, CompetitorPackage, MarketEvidence } from '@/lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
-import StatCard from '@/components/StatCard';
-import Badge from '@/components/Badge';
 import { useRouter } from 'next/navigation';
 
 const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
@@ -83,39 +81,65 @@ export default function OverviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="spinner" />
+        <div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto animate-fadeIn">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
-        <p className="text-sm text-gray-500 mt-1">Full pipeline analytics across all data sources</p>
+    <div className="p-6 max-w-[1400px] mx-auto animate-fade-in-up">
+      <div className="mb-8">
+        <h1 className="display-heading">Overview</h1>
+        <p className="section-label mt-2">Full pipeline analytics across all data sources</p>
       </div>
 
       {/* Stat Cards - First Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Travel Deals" value={deals.length} icon="💰" color="blue" subtitle={`${destinations.length} destinations`} onClick={() => router.push('/deals')} />
-        <StatCard label="Card Offers" value={offers.length} icon="💳" color="green" subtitle={`${withPromo} with promo codes`} onClick={() => router.push('/offers')} />
-        <StatCard label="Market Signals" value={market.length} icon="📈" color="purple" subtitle={`${[...new Set(market.map(m => m.signal_type))].length} types`} onClick={() => router.push('/market')} />
-        <StatCard label="Competitors" value={competitors.length} icon="🏢" color="cyan" subtitle={`${[...new Set(competitors.map(c => c.competitor))].length} tracked`} onClick={() => router.push('/competitors')} />
+        <div className="metric-card" onClick={() => router.push('/deals')} style={{ cursor: 'pointer' }}>
+          <p className="metric-value text-blue-600">{deals.length}</p>
+          <p className="metric-label">Travel Deals</p>
+        </div>
+        <div className="metric-card" onClick={() => router.push('/offers')} style={{ cursor: 'pointer' }}>
+          <p className="metric-value text-emerald-600">{offers.length}</p>
+          <p className="metric-label">Card Offers</p>
+        </div>
+        <div className="metric-card" onClick={() => router.push('/market')} style={{ cursor: 'pointer' }}>
+          <p className="metric-value text-purple-600">{market.length}</p>
+          <p className="metric-label">Market Signals</p>
+        </div>
+        <div className="metric-card" onClick={() => router.push('/competitors')} style={{ cursor: 'pointer' }}>
+          <p className="metric-value text-cyan-600">{competitors.length}</p>
+          <p className="metric-label">Competitors</p>
+        </div>
       </div>
 
       {/* Stat Cards - Second Row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Cheapest Deal" value={`₹${prices.length > 0 ? Math.min(...prices).toLocaleString() : 'N/A'}`} icon="🎯" color="green" />
-        <StatCard label="Avg Deal Price" value={`₹${prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length).toLocaleString() : 'N/A'}`} icon="📊" color="yellow" />
-        <StatCard label="Data Sources" value={sources.length} icon="🔗" color="gray" />
-        <StatCard label="Destinations" value={destinations.length} icon="🌍" color="pink" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="metric-card">
+          <p className="metric-value text-emerald-600">₹{prices.length > 0 ? Math.min(...prices).toLocaleString() : 'N/A'}</p>
+          <p className="metric-label">Cheapest Deal</p>
+        </div>
+        <div className="metric-card">
+          <p className="metric-value text-blue-600">₹{prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length).toLocaleString() : 'N/A'}</p>
+          <p className="metric-label">Avg Deal Price</p>
+        </div>
+        <div className="metric-card">
+          <p className="metric-value text-gray-600">{sources.length}</p>
+          <p className="metric-label">Data Sources</p>
+        </div>
+        <div className="metric-card">
+          <p className="metric-value text-pink-600">{destinations.length}</p>
+          <p className="metric-label">Destinations</p>
+        </div>
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Deals by Destination</h3>
-          <ResponsiveContainer width="100%" height={260}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Deals by Destination</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={280}>
             <BarChart data={destChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
@@ -126,9 +150,11 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Price Distribution by Destination</h3>
-          <ResponsiveContainer width="100%" height={260}>
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Price Distribution by Destination</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={280}>
             <BarChart data={priceChartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis dataKey="destination" tick={{ fontSize: 10 }} stroke="#94a3b8" />
@@ -143,10 +169,12 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Deals by Type</h3>
-          <ResponsiveContainer width="100%" height={220}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Deals by Type</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
             <PieChart>
               <Pie data={typeChartData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                 {typeChartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
@@ -156,9 +184,11 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Offers by Source</h3>
-          <ResponsiveContainer width="100%" height={220}>
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Offers by Source</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={240}>
             <BarChart data={offerSourceData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
@@ -169,11 +199,13 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Top 5 Cheapest Deals</h3>
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Top 5 Cheapest Deals</h3>
+          </div>
           <div className="space-y-3">
             {deals.filter(d => d.deal_price).sort((a, b) => a.deal_price! - b.deal_price!).slice(0, 5).map(deal => (
-              <div key={deal.id} className="flex items-center justify-between text-sm">
+              <div key={deal.id} className="flex items-center justify-between text-sm p-3 bg-gray-50 rounded-lg">
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-gray-900 truncate">{deal.title.substring(0, 35)}</div>
                   <div className="text-xs text-gray-500">{deal.destination} • {deal.source}</div>
@@ -188,12 +220,14 @@ export default function OverviewPage() {
       </div>
 
       {/* Source Distribution */}
-      <div className="card p-5">
-        <h3 className="text-sm font-semibold text-gray-700 mb-4">Data Sources</h3>
+      <div className="panel">
+        <div className="panel-header">
+          <h3 className="panel-title">Data Sources</h3>
+        </div>
         <div className="flex flex-wrap gap-2">
           {sources.map(src => (
-            <div key={src} className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
-              <Badge text={src} color={src} />
+            <div key={src} className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-gray-100">
+              <span className="status-badge status-badge-gray">{src}</span>
               <span className="text-xs text-gray-500">{deals.filter(d => d.source === src).length}</span>
             </div>
           ))}
