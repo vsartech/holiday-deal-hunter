@@ -9,12 +9,14 @@ interface Message {
 }
 
 const SUGGESTIONS = [
-  "What's the cheapest deal for Bangkok?",
-  "Compare Dubai vs Singapore packages",
-  "Best card offers for flight booking",
-  "Plan a 5-day Bali itinerary",
-  "Maldives honeymoon packages under 1 lakh",
-  "Best time to visit Japan",
+  "What are the cheapest deals for Bangkok?",
+  "Compare Goibibo vs Cleartrip prices",
+  "Best SBI card offers for flights",
+  "What are the market trends for Dubai?",
+  "Competitor pricing for Maldives packages",
+  "Plan a budget trip to Bali",
+  "Which destination has the most deals?",
+  "What promo codes are available right now?",
 ];
 
 export default function ChatPage() {
@@ -84,7 +86,7 @@ export default function ChatPage() {
     <div>
       <header className="header">
         <div className="container header-content">
-          <h1>🏖️ Holiday Deal Hunter</h1>
+          <h1>🏖️ Holiday Intelligence</h1>
           <nav>
             <a href="/">Deals</a>
             <a href="/analytics">Analytics</a>
@@ -94,11 +96,11 @@ export default function ChatPage() {
       </header>
 
       <main className="container" style={{ padding: '30px 20px' }}>
-        <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div className="card" style={{ maxWidth: '900px', margin: '0 auto' }}>
           <div className="card-header">
             <span className="card-title">💬 Holiday AI Assistant</span>
             <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Powered by NVIDIA AI
+              Powered by NVIDIA AI • Full Pipeline Access
             </span>
           </div>
 
@@ -106,7 +108,10 @@ export default function ChatPage() {
             <div className="chat-messages">
               {messages.length === 0 && (
                 <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                  <p style={{ fontSize: '1.2rem', marginBottom: '20px' }}>How can I help you plan your holiday?</p>
+                  <p style={{ fontSize: '1.2rem', marginBottom: '10px' }}>How can I help you with your holiday planning?</p>
+                  <p style={{ fontSize: '0.9rem', marginBottom: '20px', color: 'var(--text-muted)' }}>
+                    I have access to market intelligence, deals, card offers, and competitor data.
+                  </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center' }}>
                     {SUGGESTIONS.map((suggestion, i) => (
                       <button
@@ -162,7 +167,7 @@ export default function ChatPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about travel deals, destinations, or planning..."
+                placeholder="Ask about deals, prices, offers, competitors, or market trends..."
                 disabled={loading}
               />
               <button

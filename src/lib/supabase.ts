@@ -5,7 +5,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Types
+// Types for full pipeline
 export interface TravelDeal {
   id: string;
   deal_id: string | null;
@@ -63,29 +63,66 @@ export interface CardOffer {
   created_at: string;
 }
 
-export interface DealMatch {
+export interface CompetitorPackage {
   id: string;
-  deal_id: string;
-  offer_id: string;
-  estimated_savings: number;
-  final_price_after_offer: number | null;
-  promo_code_applicable: boolean;
-  notes: string | null;
+  competitor: string;
+  title: string;
+  destination: string | null;
+  duration: string | null;
+  price: number | null;
+  currency: string;
+  inclusions: string[];
+  exclusions: string[];
+  departure_city: string | null;
+  season: string | null;
+  source_url: string | null;
+  confidence: number;
+  captured_at: string;
   created_at: string;
-  travel_deals?: TravelDeal;
-  card_offers?: CardOffer;
 }
 
-export interface DestinationAnalytics {
+export interface MarketEvidence {
   id: string;
-  destination: string;
-  search_count: number;
-  avg_price: number | null;
-  min_price: number | null;
-  max_price: number | null;
-  deals_count: number;
-  last_searched: string;
+  signal_type: string;
+  source: string;
+  destination: string | null;
+  country: string | null;
+  title: string | null;
+  description: string | null;
+  value: number | null;
+  unit: string | null;
+  metadata: Record<string, unknown>;
+  captured_at: string;
   created_at: string;
+}
+
+export interface PipelineSummary {
+  id: string;
+  summary_date: string;
+  market_signals_count: number;
+  travel_deals_count: number;
+  card_offers_count: number;
+  competitor_packages_count: number;
+  avg_deal_price: number | null;
+  min_deal_price: number | null;
+  max_deal_price: number | null;
+  top_destinations: string[];
+  top_sources: string[];
+  created_at: string;
+}
+
+export interface PipelineRun {
+  id: string;
+  run_type: string;
+  destination: string | null;
+  status: string;
+  started_at: string;
+  completed_at: string | null;
+  duration_seconds: number | null;
+  items_processed: number;
+  items_successful: number;
+  items_failed: number;
+  raw_data: Record<string, unknown>;
 }
 
 export interface ChatMessage {
