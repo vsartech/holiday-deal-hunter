@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, TravelDeal, CardOffer, CompetitorPackage, MarketEvidence, PipelineSummary } from '@/lib/supabase';
+import { supabase, TravelDeal, CardOffer, CompetitorPackage, MarketSignal, PipelineSummary } from '@/lib/supabase';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line, Legend, AreaChart, Area
@@ -13,7 +13,7 @@ export default function AnalyticsPage() {
   const [deals, setDeals] = useState<TravelDeal[]>([]);
   const [offers, setOffers] = useState<CardOffer[]>([]);
   const [competitors, setCompetitors] = useState<CompetitorPackage[]>([]);
-  const [marketSignals, setMarketSignals] = useState<MarketEvidence[]>([]);
+  const [marketSignals, setMarketSignals] = useState<MarketSignal[]>([]);
   const [summaries, setSummaries] = useState<PipelineSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'deals' | 'market' | 'competitors'>('overview');

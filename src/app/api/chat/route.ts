@@ -14,7 +14,7 @@ async function getPipelineContext(): Promise<string> {
     supabase.from('travel_deals').select('*').order('deal_price', { ascending: true }).limit(50),
     supabase.from('card_offers').select('*').order('discount_percent', { ascending: false }).limit(30),
     supabase.from('competitor_packages').select('*').order('price', { ascending: true }).limit(30),
-    supabase.from('market_evidence').select('*').order('created_at', { ascending: false }).limit(100),
+    supabase.from('market_signals_v2').select('*').order('created_at', { ascending: false }).limit(100),
     supabase.from('pipeline_summary').select('*').order('summary_date', { ascending: false }).limit(7),
   ]);
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { supabase, MarketEvidence } from '@/lib/supabase';
+import { supabase, MarketSignal } from '@/lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 function StatusBadge({ text, color }: { text: string; color?: string }) {
@@ -30,16 +30,16 @@ function StatusBadge({ text, color }: { text: string; color?: string }) {
 }
 
 export default function MarketPage() {
-  const [signals, setSignals] = useState<MarketEvidence[]>([]);
+  const [signals, setSignals] = useState<MarketSignal[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState('All');
   const [destFilter, setDestFilter] = useState('All');
-  const [selectedSignal, setSelectedSignal] = useState<MarketEvidence | null>(null);
+  const [selectedSignal, setSelectedSignal] = useState<MarketSignal | null>(null);
   const [page, setPage] = useState(1);
   const perPage = 25;
 
   useEffect(() => {
-    supabase.from('market_evidence').select('*').order('created_at', { ascending: false }).limit(2000)
+    supabase.from('market_signals_v2').select('*').order('created_at', { ascending: false }).limit(2000)
       .then(({ data }) => { setSignals(data || []); setLoading(false); });
   }, []);
 

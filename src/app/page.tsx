@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, TravelDeal, CardOffer, CompetitorPackage, MarketEvidence } from '@/lib/supabase';
+import { supabase, TravelDeal, CardOffer, CompetitorPackage, MarketSignal } from '@/lib/supabase';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { useRouter } from 'next/navigation';
 
@@ -12,7 +12,7 @@ export default function OverviewPage() {
   const [deals, setDeals] = useState<TravelDeal[]>([]);
   const [offers, setOffers] = useState<CardOffer[]>([]);
   const [competitors, setCompetitors] = useState<CompetitorPackage[]>([]);
-  const [market, setMarket] = useState<MarketEvidence[]>([]);
+  const [market, setMarket] = useState<MarketSignal[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

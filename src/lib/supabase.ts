@@ -81,7 +81,7 @@ export interface CompetitorPackage {
   created_at: string;
 }
 
-export interface MarketEvidence {
+export interface MarketSignal {
   id: string;
   signal_type: string;
   source: string;
