@@ -50,10 +50,10 @@ export default function DealsPage() {
     else { setSortBy(col); setSortAsc(true); }
   }
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="spinner" /></div>;
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto">
+    <div className="p-6 max-w-[1400px] mx-auto animate-fadeIn">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Travel Deals</h1>
         <p className="text-sm text-gray-500 mt-1">{filtered.length} deals found • Click any row for details</p>
@@ -61,21 +61,21 @@ export default function DealsPage() {
 
       {/* Stats strip */}
       <div className="grid grid-cols-4 gap-4 mb-5">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Total</div>
-          <div className="text-xl font-bold">{filtered.length}</div>
+        <div className="card stat-card">
+          <p className="label">Total</p>
+          <p className="value text-gray-900">{filtered.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Cheapest</div>
-          <div className="text-xl font-bold text-emerald-600">₹{prices.length > 0 ? Math.min(...prices).toLocaleString() : 'N/A'}</div>
+        <div className="card stat-card">
+          <p className="label">Cheapest</p>
+          <p className="value text-emerald-600">₹{prices.length > 0 ? Math.min(...prices).toLocaleString() : 'N/A'}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Average</div>
-          <div className="text-xl font-bold text-blue-600">₹{prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length).toLocaleString() : 'N/A'}</div>
+        <div className="card stat-card">
+          <p className="label">Average</p>
+          <p className="value text-blue-600">₹{prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length).toLocaleString() : 'N/A'}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">With Promo</div>
-          <div className="text-xl font-bold text-purple-600">{filtered.filter(d => d.promo_codes?.length > 0).length}</div>
+        <div className="card stat-card">
+          <p className="label">With Promo</p>
+          <p className="value text-purple-600">{filtered.filter(d => d.promo_codes?.length > 0).length}</p>
         </div>
       </div>
 
@@ -93,7 +93,7 @@ export default function DealsPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -127,8 +127,8 @@ export default function DealsPage() {
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
           <span className="text-xs text-gray-500">Page {page} of {totalPages} ({filtered.length} results)</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50">Prev</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="btn btn-secondary text-xs">Prev</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="btn btn-secondary text-xs">Next</button>
           </div>
         </div>
       </div>

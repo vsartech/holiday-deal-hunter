@@ -52,36 +52,36 @@ export default function OffersPage() {
   const withPromo = offers.filter(o => o.promo_code).length;
   const withDiscount = offers.filter(o => o.discount_percent || o.discount_amount).length;
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="spinner" /></div>;
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto">
+    <div className="p-6 max-w-[1400px] mx-auto animate-fadeIn">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Card Offers</h1>
         <p className="text-sm text-gray-500 mt-1">{filtered.length} offers • Click any row for details</p>
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-5">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Total Offers</div>
-          <div className="text-xl font-bold">{filtered.length}</div>
+        <div className="card stat-card">
+          <p className="label">Total Offers</p>
+          <p className="value text-gray-900">{filtered.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">With Promo Code</div>
-          <div className="text-xl font-bold text-blue-600">{withPromo}</div>
+        <div className="card stat-card">
+          <p className="label">With Promo Code</p>
+          <p className="value text-blue-600">{withPromo}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">With Discount</div>
-          <div className="text-xl font-bold text-emerald-600">{withDiscount}</div>
+        <div className="card stat-card">
+          <p className="label">With Discount</p>
+          <p className="value text-emerald-600">{withDiscount}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Banks</div>
-          <div className="text-xl font-bold text-purple-600">{banks.length}</div>
+        <div className="card stat-card">
+          <p className="label">Banks</p>
+          <p className="value text-purple-600">{banks.length}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Offers by Type</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
@@ -92,7 +92,7 @@ export default function OffersPage() {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Offers by Bank</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={bankData}>
@@ -119,7 +119,7 @@ export default function OffersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -158,8 +158,8 @@ export default function OffersPage() {
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
           <span className="text-xs text-gray-500">Page {page} of {totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50">Prev</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="btn btn-secondary text-xs">Prev</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="btn btn-secondary text-xs">Next</button>
           </div>
         </div>
       </div>

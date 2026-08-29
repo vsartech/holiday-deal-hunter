@@ -68,14 +68,14 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="p-6 max-w-[900px] mx-auto">
+    <div className="p-6 max-w-[900px] mx-auto animate-fadeIn">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">AI Assistant</h1>
         <p className="text-sm text-gray-500 mt-1">Ask about deals, prices, offers, competitors, or market trends</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="h-[500px] overflow-y-auto p-5 space-y-4">
+      <div className="card overflow-hidden flex flex-col" style={{ height: '600px' }}>
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {messages.length === 0 && (
             <div className="text-center py-12">
               <div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-3xl mx-auto mb-4">🤖</div>
@@ -83,7 +83,7 @@ export default function ChatPage() {
               <p className="text-sm text-gray-500 mb-6">I have access to deals, offers, competitor data, and market intelligence.</p>
               <div className="flex flex-wrap gap-2 justify-center max-w-[600px] mx-auto">
                 {SUGGESTIONS.map((s, i) => (
-                  <button key={i} onClick={() => sendMessage(s)} className="px-3 py-1.5 text-xs border border-gray-200 rounded-full hover:border-blue-300 hover:text-blue-600 transition-colors">
+                  <button key={i} onClick={() => sendMessage(s)} className="btn btn-secondary text-xs px-3 py-1.5">
                     {s}
                   </button>
                 ))}
@@ -132,7 +132,7 @@ export default function ChatPage() {
             <button
               onClick={() => sendMessage()}
               disabled={loading || !input.trim()}
-              className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors"
+              className="btn btn-primary"
             >
               Send
             </button>

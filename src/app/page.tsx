@@ -83,19 +83,19 @@ export default function OverviewPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
+        <div className="spinner" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto">
+    <div className="p-6 max-w-[1400px] mx-auto animate-fadeIn">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
         <p className="text-sm text-gray-500 mt-1">Full pipeline analytics across all data sources</p>
       </div>
 
-      {/* Stat Cards */}
+      {/* Stat Cards - First Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Travel Deals" value={deals.length} icon="💰" color="blue" subtitle={`${destinations.length} destinations`} onClick={() => router.push('/deals')} />
         <StatCard label="Card Offers" value={offers.length} icon="💳" color="green" subtitle={`${withPromo} with promo codes`} onClick={() => router.push('/offers')} />
@@ -103,6 +103,7 @@ export default function OverviewPage() {
         <StatCard label="Competitors" value={competitors.length} icon="🏢" color="cyan" subtitle={`${[...new Set(competitors.map(c => c.competitor))].length} tracked`} onClick={() => router.push('/competitors')} />
       </div>
 
+      {/* Stat Cards - Second Row */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard label="Cheapest Deal" value={`₹${prices.length > 0 ? Math.min(...prices).toLocaleString() : 'N/A'}`} icon="🎯" color="green" />
         <StatCard label="Avg Deal Price" value={`₹${prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length).toLocaleString() : 'N/A'}`} icon="📊" color="yellow" />
@@ -112,7 +113,7 @@ export default function OverviewPage() {
 
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Deals by Destination</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={destChartData}>
@@ -125,7 +126,7 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Price Distribution by Destination</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={priceChartData}>
@@ -143,7 +144,7 @@ export default function OverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Deals by Type</h3>
           <ResponsiveContainer width="100%" height={220}>
             <PieChart>
@@ -155,7 +156,7 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Offers by Source</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={offerSourceData} layout="vertical">
@@ -168,7 +169,7 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Top 5 Cheapest Deals</h3>
           <div className="space-y-3">
             {deals.filter(d => d.deal_price).sort((a, b) => a.deal_price! - b.deal_price!).slice(0, 5).map(deal => (
@@ -187,7 +188,7 @@ export default function OverviewPage() {
       </div>
 
       {/* Source Distribution */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
+      <div className="card p-5">
         <h3 className="text-sm font-semibold text-gray-700 mb-4">Data Sources</h3>
         <div className="flex flex-wrap gap-2">
           {sources.map(src => (

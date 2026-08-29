@@ -4,9 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase, MarketEvidence } from '@/lib/supabase';
 import Badge from '@/components/Badge';
 import Modal from '@/components/Modal';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-
-const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function MarketPage() {
   const [signals, setSignals] = useState<MarketEvidence[]>([]);
@@ -41,7 +39,7 @@ export default function MarketPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const typeData = Object.entries(byType).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  const typeData = Object.entries(byType).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
 
   const byDest = signals.filter(s => s.destination).reduce((acc, s) => {
     acc[s.destination!] = (acc[s.destination!] || 0) + 1;
@@ -55,41 +53,41 @@ export default function MarketPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const sourceData = Object.entries(bySource).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+  const sourceData = Object.entries(bySource).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 10);
 
-  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="spinner" /></div>;
 
   return (
-    <div className="p-6 max-w-[1400px] mx-auto">
+    <div className="p-6 max-w-[1400px] mx-auto animate-fadeIn">
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Market Intelligence</h1>
         <p className="text-sm text-gray-500 mt-1">{filtered.length} signals from {sources.length} sources</p>
       </div>
 
       <div className="grid grid-cols-4 gap-4 mb-5">
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Total Signals</div>
-          <div className="text-xl font-bold">{filtered.length}</div>
+        <div className="card stat-card">
+          <p className="label">Total Signals</p>
+          <p className="value text-gray-900">{filtered.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Signal Types</div>
-          <div className="text-xl font-bold text-blue-600">{types.length}</div>
+        <div className="card stat-card">
+          <p className="label">Signal Types</p>
+          <p className="value text-blue-600">{types.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Destinations</div>
-          <div className="text-xl font-bold text-emerald-600">{destinations.length}</div>
+        <div className="card stat-card">
+          <p className="label">Destinations</p>
+          <p className="value text-emerald-600">{destinations.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-xs text-gray-500 uppercase font-medium">Sources</div>
-          <div className="text-xl font-bold text-purple-600">{sources.length}</div>
+        <div className="card stat-card">
+          <p className="label">Sources</p>
+          <p className="value text-purple-600">{sources.length}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Signals by Type</h3>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={typeData.slice(0, 8)} layout="vertical">
+            <BarChart data={typeData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
               <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
               <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10 }} stroke="#94a3b8" />
@@ -99,12 +97,12 @@ export default function MarketPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Signals by Destination</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={destData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#94a3b8" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
               <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
               <Tooltip />
               <Bar dataKey="value" fill="#10b981" radius={[4, 4, 0, 0]} />
@@ -112,12 +110,12 @@ export default function MarketPage() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="card p-5">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Signals by Source</h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={sourceData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} stroke="#94a3b8" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
               <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
               <Tooltip />
               <Bar dataKey="value" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
@@ -139,7 +137,7 @@ export default function MarketPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="data-table">
             <thead>
@@ -169,8 +167,8 @@ export default function MarketPage() {
         <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
           <span className="text-xs text-gray-500">Page {page} of {totalPages}</span>
           <div className="flex gap-2">
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50">Prev</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="px-3 py-1 text-xs border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50">Next</button>
+            <button disabled={page <= 1} onClick={() => setPage(page - 1)} className="btn btn-secondary text-xs">Prev</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)} className="btn btn-secondary text-xs">Next</button>
           </div>
         </div>
       </div>
