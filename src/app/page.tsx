@@ -1,270 +1,203 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase, TravelDeal, CardOffer } from '@/lib/supabase';
+import { supabase, TravelDeal, CardOffer, CompetitorPackage, MarketEvidence } from '@/lib/supabase';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import StatCard from '@/components/StatCard';
+import Badge from '@/components/Badge';
+import { useRouter } from 'next/navigation';
 
-const DESTINATIONS = [
-  'Bangkok', 'Dubai', 'Singapore', 'Bali', 'Maldives',
-  'Goa', 'Thailand', 'Vietnam', 'Japan', 'Sri Lanka',
-];
+const COLORS = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#ec4899', '#14b8a6'];
 
-const SOURCES = [
-  { id: 'all', name: 'All Sources' },
-  { id: 'cleartrip', name: 'Cleartrip' },
-  { id: 'goibibo', name: 'Goibibo' },
-  { id: 'veena_world', name: 'Veena World' },
-  { id: 'kesari', name: 'Kesari Tours' },
-  { id: 'axis_bank', name: 'Axis Bank' },
-];
-
-export default function HomePage() {
-  const [destination, setDestination] = useState('Bangkok');
+export default function OverviewPage() {
+  const router = useRouter();
   const [deals, setDeals] = useState<TravelDeal[]>([]);
   const [offers, setOffers] = useState<CardOffer[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [selectedDeal, setSelectedDeal] = useState<TravelDeal | null>(null);
-  const [applicableOffers, setApplicableOffers] = useState<CardOffer[]>([]);
+  const [competitors, setCompetitors] = useState<CompetitorPackage[]>([]);
+  const [market, setMarket] = useState<MarketEvidence[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDeals();
-  }, [destination]);
-
-  async function fetchDeals() {
-    setLoading(true);
-    try {
-      const { data: dealsData } = await supabase
-        .from('travel_deals')
-        .select('*')
-        .ilike('destination', `%${destination}%`)
-        .order('deal_price', { ascending: true })
-        .limit(50);
-
-      const { data: offersData } = await supabase
-        .from('card_offers')
-        .select('*')
-        .order('discount_percent', { ascending: false })
-        .limit(50);
-
-      setDeals(dealsData || []);
-      setOffers(offersData || []);
-    } catch (error) {
-      console.error('Error fetching deals:', error);
-    }
-    setLoading(false);
-  }
-
-  function findApplicableOffers(deal: TravelDeal) {
-    return offers.filter(offer => {
-      // Platform check
-      if (offer.platforms?.length > 0) {
-        const dealSource = deal.source.toLowerCase();
-        if (!offer.platforms.some(p => dealSource.includes(p.toLowerCase()))) {
-          return false;
-        }
-      }
-      // Deal type check
-      if (offer.deal_types?.length > 0) {
-        if (!offer.deal_types.includes(deal.deal_type)) {
-          return false;
-        }
-      }
-      return true;
+    Promise.all([
+      supabase.from('travel_deals').select('*').limit(500),
+      supabase.from('card_offers').select('*').limit(200),
+      supabase.from('competitor_packages').select('*').limit(300),
+      supabase.from('market_evidence').select('*').limit(1000),
+    ]).then(([d, o, c, m]) => {
+      setDeals(d.data || []);
+      setOffers(o.data || []);
+      setCompetitors(c.data || []);
+      setMarket(m.data || []);
+      setLoading(false);
     });
-  }
+  }, []);
 
-  function calculateFinalPrice(deal: TravelDeal, offer: CardOffer) {
-    const price = deal.deal_price || deal.original_price;
-    if (!price) return null;
+  const prices = deals.filter(d => d.deal_price).map(d => d.deal_price!);
+  const withPromo = deals.filter(d => d.promo_codes?.length > 0).length;
+  const destinations = [...new Set(deals.map(d => d.destination).filter(Boolean))];
+  const sources = [...new Set(deals.map(d => d.source))];
 
-    let savings = 0;
-    if (offer.discount_percent) {
-      savings = (price * offer.discount_percent) / 100;
-      if (offer.max_discount) {
-        savings = Math.min(savings, offer.max_discount);
-      }
-    } else if (offer.discount_amount) {
-      savings = offer.discount_amount;
-    } else if (offer.cashback_amount) {
-      savings = offer.cashback_amount;
-    }
+  const dealsByDest = deals.reduce((acc, d) => {
+    const dest = d.destination || 'Unknown';
+    acc[dest] = (acc[dest] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-    return Math.max(0, price - savings);
-  }
+  const destChartData = Object.entries(dealsByDest)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8);
 
-  function handleDealClick(deal: TravelDeal) {
-    setSelectedDeal(deal);
-    const applicable = findApplicableOffers(deal);
-    setApplicableOffers(applicable);
-  }
+  const dealsByType = deals.reduce((acc, d) => {
+    acc[d.deal_type] = (acc[d.deal_type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-  function getCheapestPrice(deal: TravelDeal) {
-    const applicable = findApplicableOffers(deal);
-    const basePrice = deal.deal_price || deal.original_price;
-    if (!basePrice) return null;
+  const typeChartData = Object.entries(dealsByType).map(([name, value]) => ({ name, value }));
 
-    let cheapest = basePrice;
-    for (const offer of applicable) {
-      const finalPrice = calculateFinalPrice(deal, offer);
-      if (finalPrice && finalPrice < cheapest) {
-        cheapest = finalPrice;
-      }
-    }
-    return cheapest;
+  const priceByDest = deals
+    .filter(d => d.deal_price && d.destination)
+    .reduce((acc, d) => {
+      const dest = d.destination!;
+      if (!acc[dest]) acc[dest] = [];
+      acc[dest].push(d.deal_price!);
+      return acc;
+    }, {} as Record<string, number[]>);
+
+  const priceChartData = Object.entries(priceByDest).map(([dest, p]) => ({
+    destination: dest,
+    min: Math.min(...p),
+    avg: Math.round(p.reduce((a, b) => a + b, 0) / p.length),
+    max: Math.max(...p),
+  })).sort((a, b) => a.avg - b.avg).slice(0, 8);
+
+  const offersBySource = offers.reduce((acc, o) => {
+    acc[o.source] = (acc[o.source] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const offerSourceData = Object.entries(offersBySource)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="w-8 h-8 border-3 border-gray-200 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    );
   }
 
   return (
-    <div>
-      <header className="header">
-        <div className="container header-content">
-          <h1>🏖️ Holiday Deal Hunter</h1>
-          <nav>
-            <a href="/">Deals</a>
-            <a href="/analytics">Analytics</a>
-            <a href="/chat">Chat Assistant</a>
-          </nav>
-        </div>
-      </header>
+    <div className="p-6 max-w-[1400px] mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Overview</h1>
+        <p className="text-sm text-gray-500 mt-1">Full pipeline analytics across all data sources</p>
+      </div>
 
-      <main className="container" style={{ padding: '30px 20px' }}>
-        {/* Destination Selector */}
-        <div className="card" style={{ marginBottom: '20px' }}>
-          <div className="card-header">
-            <span className="card-title">Find Deals For</span>
-          </div>
-          <div className="search-box">
-            <select
-              className="search-input"
-              value={destination}
-              onChange={(e) => setDestination(e.target.value)}
-            >
-              {DESTINATIONS.map(d => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
-            <button className="btn btn-primary" onClick={fetchDeals}>
-              Search
-            </button>
-          </div>
-        </div>
+      {/* Stat Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard label="Travel Deals" value={deals.length} icon="💰" color="blue" subtitle={`${destinations.length} destinations`} onClick={() => router.push('/deals')} />
+        <StatCard label="Card Offers" value={offers.length} icon="💳" color="green" subtitle={`${withPromo} with promo codes`} onClick={() => router.push('/offers')} />
+        <StatCard label="Market Signals" value={market.length} icon="📈" color="purple" subtitle={`${[...new Set(market.map(m => m.signal_type))].length} types`} onClick={() => router.push('/market')} />
+        <StatCard label="Competitors" value={competitors.length} icon="🏢" color="cyan" subtitle={`${[...new Set(competitors.map(c => c.competitor))].length} tracked`} onClick={() => router.push('/competitors')} />
+      </div>
 
-        {/* Stats */}
-        <div className="grid grid-4" style={{ marginBottom: '20px' }}>
-          <div className="card stat-card">
-            <div className="stat-value">{deals.length}</div>
-            <div className="stat-label">Total Deals</div>
-          </div>
-          <div className="card stat-card">
-            <div className="stat-value">{offers.length}</div>
-            <div className="stat-label">Card Offers</div>
-          </div>
-          <div className="card stat-card">
-            <div className="stat-value">
-              ₹{deals.filter(d => d.deal_price).length > 0
-                ? Math.min(...deals.filter(d => d.deal_price).map(d => d.deal_price!)).toLocaleString()
-                : 'N/A'}
-            </div>
-            <div className="stat-label">Cheapest Deal</div>
-          </div>
-          <div className="card stat-card">
-            <div className="stat-value">
-              {deals.filter(d => d.promo_codes?.length > 0).length}
-            </div>
-            <div className="stat-label">With Promo Codes</div>
-          </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard label="Cheapest Deal" value={`₹${prices.length > 0 ? Math.min(...prices).toLocaleString() : 'N/A'}`} icon="🎯" color="green" />
+        <StatCard label="Avg Deal Price" value={`₹${prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length).toLocaleString() : 'N/A'}`} icon="📊" color="yellow" />
+        <StatCard label="Data Sources" value={sources.length} icon="🔗" color="gray" />
+        <StatCard label="Destinations" value={destinations.length} icon="🌍" color="pink" />
+      </div>
+
+      {/* Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Deals by Destination</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={destChartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <Tooltip />
+              <Bar dataKey="value" fill="#2563eb" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Deals List */}
-        <div className="grid grid-2">
-          <div>
-            <h2 style={{ marginBottom: '15px' }}>Deals in {destination}</h2>
-            {loading ? (
-              <div className="loading"><div className="spinner"></div></div>
-            ) : deals.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: '40px' }}>
-                No deals found for {destination}
-              </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                {deals.map(deal => {
-                  const cheapest = getCheapestPrice(deal);
-                  return (
-                    <div
-                      key={deal.id}
-                      className="card deal-card"
-                      onClick={() => handleDealClick(deal)}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <div className="deal-header">
-                        <span className="deal-title">{deal.title}</span>
-                        <span className="deal-source">{deal.source}</span>
-                      </div>
-                      <div>
-                        <span className={`deal-badge badge-${deal.deal_type}`}>
-                          {deal.deal_type}
-                        </span>
-                      </div>
-                      {deal.deal_price && (
-                        <div>
-                          <span className="deal-price">₹{deal.deal_price.toLocaleString()}</span>
-                          {cheapest && cheapest < deal.deal_price && (
-                            <span style={{ marginLeft: '10px', color: 'var(--secondary)', fontWeight: 600 }}>
-                              Best: ₹{cheapest.toLocaleString()}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      {deal.promo_codes?.length > 0 && (
-                        <div className="offer-tag">
-                          🏷️ Code: {deal.promo_codes[0]}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Price Distribution by Destination</h3>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={priceChartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis dataKey="destination" tick={{ fontSize: 10 }} stroke="#94a3b8" />
+              <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
+              <Tooltip formatter={(v: number) => `₹${v.toLocaleString()}`} />
+              <Legend />
+              <Bar dataKey="min" fill="#10b981" name="Min" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="avg" fill="#2563eb" name="Avg" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="max" fill="#ef4444" name="Max" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
 
-          {/* Offers Panel */}
-          <div>
-            <h2 style={{ marginBottom: '15px' }}>
-              {selectedDeal ? `Offers for: ${selectedDeal.title.substring(0, 30)}...` : 'Available Card Offers'}
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {(selectedDeal ? applicableOffers : offers.slice(0, 10)).map(offer => (
-                <div key={offer.id} className="card" style={{ padding: '15px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{offer.title.substring(0, 60)}</div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '4px' }}>
-                        {offer.source} {offer.bank_name && `• ${offer.bank_name}`}
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      {offer.discount_percent && (
-                        <div style={{ color: 'var(--secondary)', fontWeight: 700 }}>
-                          {offer.discount_percent}% OFF
-                        </div>
-                      )}
-                      {offer.promo_code && (
-                        <div className="offer-tag" style={{ marginTop: '4px' }}>
-                          {offer.promo_code}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {selectedDeal && offer.promo_code && (
-                    <div style={{ marginTop: '10px', padding: '10px', background: '#f0fdf4', borderRadius: '6px', fontSize: '0.85rem' }}>
-                      Final price with this offer: ₹
-                      {calculateFinalPrice(selectedDeal, offer)?.toLocaleString() || 'N/A'}
-                    </div>
-                  )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Deals by Type</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie data={typeChartData} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                {typeChartData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Offers by Source</h3>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={offerSourceData} layout="vertical">
+              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+              <XAxis type="number" tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <YAxis dataKey="name" type="category" width={90} tick={{ fontSize: 11 }} stroke="#94a3b8" />
+              <Tooltip />
+              <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="bg-white rounded-xl border border-gray-200 p-5">
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">Top 5 Cheapest Deals</h3>
+          <div className="space-y-3">
+            {deals.filter(d => d.deal_price).sort((a, b) => a.deal_price! - b.deal_price!).slice(0, 5).map(deal => (
+              <div key={deal.id} className="flex items-center justify-between text-sm">
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate">{deal.title.substring(0, 35)}</div>
+                  <div className="text-xs text-gray-500">{deal.destination} • {deal.source}</div>
                 </div>
-              ))}
-            </div>
+                <div className="text-right ml-3">
+                  <div className="font-semibold text-emerald-600">₹{deal.deal_price!.toLocaleString()}</div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      </main>
+      </div>
+
+      {/* Source Distribution */}
+      <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <h3 className="text-sm font-semibold text-gray-700 mb-4">Data Sources</h3>
+        <div className="flex flex-wrap gap-2">
+          {sources.map(src => (
+            <div key={src} className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg border border-gray-100">
+              <Badge text={src} color={src} />
+              <span className="text-xs text-gray-500">{deals.filter(d => d.source === src).length}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

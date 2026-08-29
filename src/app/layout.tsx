@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Sidebar from '@/components/Sidebar';
 
 export const metadata: Metadata = {
-  title: 'Holiday Deal Hunter - Find Cheapest Travel Deals',
-  description: 'AI-powered travel deal finder with card offer matching',
+  title: 'Holiday Intelligence Platform',
+  description: 'AI-powered travel deal finder with market intelligence and competitor analysis',
 };
 
 export default function RootLayout({
@@ -13,7 +14,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <div className="flex min-h-screen">
+          <Sidebar />
+          <main className="flex-1 ml-[240px]">
+            {children}
+          </main>
+        </div>
+      </body>
     </html>
   );
 }
