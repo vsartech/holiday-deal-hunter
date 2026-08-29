@@ -27,7 +27,7 @@ test.describe('UI Layout Verification', () => {
     // Check all 8 stat cards have their labels
     const labels = ['Travel Deals', 'Card Offers', 'Market Signals', 'Competitors', 'Cheapest Deal', 'Avg Deal Price', 'Data Sources', 'Destinations'];
     for (const label of labels) {
-      await expect(page.locator(`main p:has-text("${label}")`).first()).toBeVisible();
+      await expect(page.locator(`main .metric-card .metric-label:has-text("${label}")`)).toBeVisible();
     }
   });
 
@@ -39,12 +39,12 @@ test.describe('UI Layout Verification', () => {
   });
 
   test('Overview page - Top 5 cheapest deals section', async ({ page }) => {
-    await expect(page.locator('h3:has-text("Top 5 Cheapest Deals")')).toBeVisible();
+    await expect(page.locator('.panel .panel-title:has-text("Top 5 Cheapest Deals")')).toBeVisible();
   });
 
   test('Overview page - Data Sources section', async ({ page }) => {
-    await expect(page.locator('h3:has-text("Data Sources")')).toBeVisible();
-    const badges = page.locator('.badge');
+    await expect(page.locator('.panel .panel-title:has-text("Data Sources")')).toBeVisible();
+    const badges = page.locator('.status-badge');
     await expect(badges.first()).toBeVisible();
   });
 
@@ -52,8 +52,8 @@ test.describe('UI Layout Verification', () => {
     await page.click('aside a:has-text("Travel Deals")');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('main h1:has-text("Travel Deals")')).toBeVisible();
-    await expect(page.locator('main select')).toHaveCount(3);
+    await expect(page.locator('main .display-heading:has-text("Travel Deals")')).toBeVisible();
+    await expect(page.locator('main .form-input')).toHaveCount(3);
     await expect(page.locator('main table')).toBeVisible();
   });
 
@@ -65,7 +65,7 @@ test.describe('UI Layout Verification', () => {
     await page.locator('tbody tr').first().click();
     await expect(page.locator('.modal-backdrop')).toBeVisible();
     await expect(page.locator('.modal-panel')).toBeVisible();
-    await expect(page.locator('.modal-panel h3')).toBeVisible();
+    await expect(page.locator('.modal-title')).toBeVisible();
 
     await page.click('.modal-backdrop >> button');
     await expect(page.locator('.modal-backdrop')).not.toBeVisible();
@@ -81,8 +81,8 @@ test.describe('UI Layout Verification', () => {
     await page.click('aside a:has-text("Card Offers")');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('main h1:has-text("Card Offers")')).toBeVisible();
-    await expect(page.locator('main select')).toHaveCount(2);
+    await expect(page.locator('main .display-heading:has-text("Card Offers")')).toBeVisible();
+    await expect(page.locator('main .form-input')).toHaveCount(2);
     await expect(page.locator('main table')).toBeVisible();
     await expect(page.locator('text=Offers by Type')).toBeVisible();
     await expect(page.locator('text=Offers by Bank')).toBeVisible();
@@ -95,7 +95,7 @@ test.describe('UI Layout Verification', () => {
 
     await page.locator('tbody tr').first().click();
     await expect(page.locator('.modal-backdrop')).toBeVisible();
-    await expect(page.locator('.modal-panel h3')).toBeVisible();
+    await expect(page.locator('.modal-title')).toBeVisible();
 
     // Check for key detail sections in modal
     await expect(page.locator('.modal-panel').getByText('Bank').first()).toBeVisible();
@@ -109,8 +109,8 @@ test.describe('UI Layout Verification', () => {
     await page.click('aside a:has-text("Market Intel")');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('main h1:has-text("Market Intelligence")')).toBeVisible();
-    await expect(page.locator('main select')).toHaveCount(2);
+    await expect(page.locator('main .display-heading:has-text("Market Intelligence")')).toBeVisible();
+    await expect(page.locator('main .form-input')).toHaveCount(2);
     await expect(page.locator('main table')).toBeVisible();
     
     // Charts may not render if no data - just check chart section exists
@@ -130,11 +130,11 @@ test.describe('UI Layout Verification', () => {
     if (hasData) {
       await page.locator('tbody tr').first().click();
       await expect(page.locator('.modal-backdrop')).toBeVisible();
-      await expect(page.locator('.modal-panel h3')).toBeVisible();
+      await expect(page.locator('.modal-title')).toBeVisible();
       await page.click('.modal-backdrop >> button');
     } else {
       // No data - just verify the page loads correctly
-      await expect(page.locator('main h1:has-text("Market Intelligence")')).toBeVisible();
+      await expect(page.locator('main .display-heading:has-text("Market Intelligence")')).toBeVisible();
     }
   });
 
@@ -142,8 +142,8 @@ test.describe('UI Layout Verification', () => {
     await page.click('aside a:has-text("Competitors")');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('main h1:has-text("Competitor Intelligence")')).toBeVisible();
-    await expect(page.locator('main select')).toHaveCount(2);
+    await expect(page.locator('main .display-heading:has-text("Competitor Intelligence")')).toBeVisible();
+    await expect(page.locator('main .form-input')).toHaveCount(2);
     await expect(page.locator('main table')).toBeVisible();
     
     // Charts may not render if no data
@@ -162,13 +162,13 @@ test.describe('UI Layout Verification', () => {
     if (hasData) {
       await page.locator('tbody tr').first().click();
       await expect(page.locator('.modal-backdrop')).toBeVisible();
-      await expect(page.locator('.modal-panel h3')).toBeVisible();
+      await expect(page.locator('.modal-title')).toBeVisible();
       await expect(page.locator('.modal-panel').getByText('Inclusions').first()).toBeVisible();
       await expect(page.locator('.modal-panel').getByText('Exclusions').first()).toBeVisible();
       await expect(page.locator('.modal-panel').getByText('Confidence').first()).toBeVisible();
       await page.click('.modal-backdrop >> button');
     } else {
-      await expect(page.locator('main h1:has-text("Competitor Intelligence")')).toBeVisible();
+      await expect(page.locator('main .display-heading:has-text("Competitor Intelligence")')).toBeVisible();
     }
   });
 
@@ -176,10 +176,10 @@ test.describe('UI Layout Verification', () => {
     await page.click('aside a:has-text("AI Assistant")');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.locator('main h1:has-text("AI Assistant")')).toBeVisible();
-    await expect(page.locator('main button[class*="border"]').first()).toBeVisible();
-    await expect(page.locator('main input[placeholder*="Ask about travel"]')).toBeVisible();
-    await expect(page.locator('main button:has-text("Send")')).toBeVisible();
+    await expect(page.locator('main .display-heading:has-text("AI Assistant")')).toBeVisible();
+    await expect(page.locator('main .btn-secondary').first()).toBeVisible();
+    await expect(page.locator('main .form-input[placeholder*="Ask about travel"]')).toBeVisible();
+    await expect(page.locator('main .btn-primary:has-text("Send")')).toBeVisible();
   });
 
   test('Responsive layout - Mobile sidebar', async ({ page }) => {
@@ -192,16 +192,16 @@ test.describe('UI Layout Verification', () => {
     const fontFamily = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
     expect(fontFamily).toContain('Inter');
 
-    const h1 = page.locator('main h1').first();
+    const h1 = page.locator('main .display-heading').first();
     const h1Styles = await h1.evaluate(el => getComputedStyle(el).fontSize);
     expect(parseInt(h1Styles)).toBeGreaterThanOrEqual(24);
   });
 
   test('Color scheme - primary button', async ({ page }) => {
-    const primaryButton = page.locator('main button.bg-blue-600').first();
+    const primaryButton = page.locator('main .btn-primary').first();
     if (await primaryButton.count() > 0) {
       const bgColor = await primaryButton.evaluate(el => getComputedStyle(el).backgroundColor);
-      expect(bgColor).toContain('rgb(37, 99, 235)');
+      expect(bgColor).toContain('rgb(17, 17, 17)'); // #111111
     }
   });
 
@@ -214,7 +214,7 @@ test.describe('UI Layout Verification', () => {
     await expect(page.locator('.modal-panel')).toBeVisible();
 
     const animation = await page.locator('.modal-panel').evaluate(el => getComputedStyle(el).animationName);
-    expect(animation).toBe('slideUp');
+    expect(animation).toBe('modal-panel-in');
   });
 });
 
@@ -225,7 +225,7 @@ test.describe('Cross-page consistency', () => {
     for (const path of pages) {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
-      await expect(page.locator('main h1')).toBeVisible();
+      await expect(page.locator('main .display-heading')).toBeVisible();
       await expect(page.locator('main')).toBeVisible();
     }
   });
@@ -237,7 +237,7 @@ test.describe('Cross-page consistency', () => {
       await page.goto(path);
       await page.waitForLoadState('networkidle');
 
-      const cards = page.locator('main .bg-white.rounded-xl.border');
+      const cards = page.locator('main .metric-card, main .panel');
       if (await cards.count() > 0) {
         const firstCard = cards.first();
         const border = await firstCard.evaluate(el => getComputedStyle(el).borderColor);
@@ -276,7 +276,7 @@ test.describe('Data integrity', () => {
       expect(rowCount).toBeGreaterThan(0);
     } else {
       // Verify page structure loads
-      await expect(page.locator('main h1:has-text("Market Intelligence")')).toBeVisible();
+      await expect(page.locator('main .display-heading:has-text("Market Intelligence")')).toBeVisible();
     }
   });
 
@@ -289,7 +289,7 @@ test.describe('Data integrity', () => {
       expect(rowCount).toBeGreaterThan(0);
     } else {
       // Verify page structure loads
-      await expect(page.locator('main h1:has-text("Competitor Intelligence")')).toBeVisible();
+      await expect(page.locator('main .display-heading:has-text("Competitor Intelligence")')).toBeVisible();
     }
   });
 });
